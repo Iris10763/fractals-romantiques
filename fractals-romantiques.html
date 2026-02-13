@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fractals & Cœurs — Motifs pour Dodécaèdre 3D</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&display=swap">
+  <style>
+    :root {
+      --rouge:   #c0394b;
+      --rose:    #e8637a;
+      --rose-c:  #f2a0b0;
+      --rose-p:  #fce4e9;
+      --or:      #c9a96e;
+      --nuit:    #080408;
+      --nuit2:   #120810;
+      --velours: #160d18;
+      --txt:     rgba(252,228,233,.85);
+      --txt2:    rgba(232,160,176,.6);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--nuit);
+      color: var(--txt);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── Curseur ── */
+    .cur-dot, .cur-ring {
+      position: fixed; border-radius: 50%;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%);
+    }
+    .cur-dot  { width: 8px; height: 8px; background: var(--rose); }
+    .cur-ring { width: 28px; height: 28px; border: 1px solid rgba(232,99,122,.35); z-index: 9998; }
+
+    /* ── Étoiles ── */
+    #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+
+    /* ══════════════════════════════════
+       NAVIGATION
+    ══════════════════════════════════ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 3rem;
+      background: linear-gradient(to bottom, rgba(8,4,8,.9), transparent);
+    }
+    .logo {
+      font-family: 'Cinzel', serif; font-size: 1rem;
+      letter-spacing: .22em; color: var(--or); text-decoration: none;
+    }
+    .logo::before { content: '✦ '; font-size: .75rem; color: var(--rose); }
+    nav ul { display: flex; gap: 2.5rem; list-style: none; }
+    nav a {
+      font-family: 'Cinzel', serif; font-size: .65rem;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--txt2); text-decoration: none; transition: color .2s;
+    }
+    nav a:hover { color: var(--rose-c); }
+
+    /* ══════════════════════════════════
+       HERO
+    ══════════════════════════════════ */
+    .hero {
+      position: relative; z-index: 1;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center;
+      padding: 9rem 2rem 6rem;
+      overflow: hidden;
+    }
+    .hero-deco {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      opacity: .045; pointer-events: none;
+    }
+    .hero-deco svg { width: 85vmin; height: 85vmin; }
+
+    .eyebrow {
+      font-family: 'Cinzel', serif; font-size: .6rem;
+      letter-spacing: .45em; text-transform: uppercase; color: var(--or);
+      margin-bottom: 1.75rem;
+      display: flex; align-items: center; gap: .9rem;
+    }
+    .eyebrow::before, .eyebrow::after {
+      content: ''; display: block; width: 45px; height: 1px;
+    }
+    .eyebrow::before { background: linear-gradient(90deg, transparent, rgba(201,169,110,.5)); }
+    .eyebrow::after  { background: linear-gradient(90deg, rgba(201,169,110,.5), transparent); }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2.6rem, 8vw, 7rem);
+      font-weight: 700; line-height: .9; letter-spacing: .02em;
+      margin-bottom: 1.2rem;
+    }
+    h1 span {
+      background: linear-gradient(135deg, var(--rose-p) 0%, var(--rose) 55%, var(--rouge) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    h1 em {
+      display: block; font-style: italic;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: .58em; font-weight: 300;
+      color: var(--rose-c); letter-spacing: .1em; margin-top: .25rem;
+    }
+
+    .hero-sub {
+      font-size: clamp(.95rem, 1.8vw, 1.2rem); font-weight: 300; font-style: italic;
+      color: var(--txt2); max-width: 500px; line-height: 2; margin-bottom: 2.75rem;
+    }
+
+    .cta {
+      display: inline-flex; align-items: center; gap: .7rem;
+      border: 1px solid rgba(232,99,122,.38); border-radius: 50px;
+      padding: .85rem 2rem;
+      font-family: 'Cinzel', serif; font-size: .68rem; letter-spacing: .2em;
+      text-transform: uppercase; color: var(--rose-c); text-decoration: none;
+      background: rgba(192,57,75,.05); transition: all .28s ease;
+    }
+    .cta:hover {
+      background: rgba(192,57,75,.14); border-color: var(--rose);
+      color: #fff; transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(192,57,75,.22);
+    }
+    .cta-arr { transition: transform .28s; }
+    .cta:hover .cta-arr { transform: translateY(4px); }
+
+    .wave { position: absolute; bottom: 0; left: 0; right: 0; height: 110px; overflow: hidden; }
+    .wave svg { width: 100%; height: 100%; }
+
+    /* ══════════════════════════════════
+       SECTION GÉNÉRATEUR
+    ══════════════════════════════════ */
+    .s-gen {
+      position: relative; z-index: 1;
+      background: var(--nuit2);
+      padding: 7rem 2rem 8rem;
+    }
+    .s-head { text-align: center; margin-bottom: 3.5rem; }
+    .stag {
+      font-family: 'Cinzel', serif; font-size: .6rem; letter-spacing: .35em;
+      text-transform: uppercase; color: var(--or); display: block; margin-bottom: .85rem;
+    }
+    h2 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.5rem, 3.5vw, 2.8rem); font-weight: 600; letter-spacing: .05em;
+      background: linear-gradient(135deg, #fff 0%, var(--rose-c) 60%, var(--rose) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1.15; margin-bottom: .6rem;
+    }
+    .ssub { font-size: 1rem; font-style: italic; color: var(--txt2); }
+
+    /* grille 3 colonnes */
+    .gen-grid {
+      max-width: 1180px; margin: 0 auto;
+      display: grid; grid-template-columns: 250px 1fr 240px;
+      gap: 1.75rem; align-items: start;
+    }
+    @media (max-width: 940px) {
+      .gen-grid { grid-template-columns: 1fr; }
+      .col-left { display: grid; grid-template-columns: repeat(2,1fr); gap: .5rem; }
+    }
+    @media (max-width: 480px) {
+      .col-left { grid-template-columns: 1fr; }
+    }
+
+    /* cartes motifs */
+    .mcard {
+      border: 1px solid rgba(201,169,110,.13); border-radius: 10px;
+      padding: .75rem .95rem; cursor: pointer;
+      transition: all .22s ease; background: rgba(255,255,255,.02);
+      user-select: none; position: relative; overflow: hidden;
+      margin-bottom: .5rem;
+    }
+    .mcard::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: var(--rouge); transform: scaleY(0); transform-origin: bottom;
+      transition: transform .22s ease;
+    }
+    .mcard:hover::before, .mcard.on::before { transform: scaleY(1); }
+    .mcard:hover { background: rgba(192,57,75,.07); border-color: rgba(192,57,75,.3); transform: translateX(3px); }
+    .mcard.on   { background: rgba(192,57,75,.11); border-color: rgba(232,99,122,.45); box-shadow: 0 0 18px rgba(192,57,75,.13); }
+    .mnum  { font-family: 'Cinzel', serif; font-size: .55rem; letter-spacing: .15em; color: var(--or); margin-bottom: .2rem; }
+    .mname { font-weight: 600; font-size: .86rem; color: var(--rose-c); margin-bottom: .18rem; }
+    .mdesc { font-size: .73rem; color: var(--txt2); font-style: italic; line-height: 1.35; }
+
+    /* colonne centrale */
+    .col-mid { display: flex; flex-direction: column; align-items: center; gap: 1.25rem; }
+    .cv-name { font-family: 'Cinzel', serif; font-size: 1.1rem; letter-spacing: .07em; color: var(--rose-c); text-align: center; }
+    .cv-desc { font-size: .88rem; font-style: italic; color: var(--txt2); text-align: center; }
+
+    /* cadre SVG joaillier */
+    .svg-frame {
+      position: relative;
+      width: min(460px, 100%); aspect-ratio: 1;
+      border: 1px solid rgba(201,169,110,.18); border-radius: 4px; padding: 8px;
+      background: rgba(8,4,8,.7);
+      box-shadow: 0 0 0 1px rgba(201,169,110,.05), 0 0 50px rgba(192,57,75,.07), inset 0 0 50px rgba(8,4,8,.9);
+    }
+    .svg-frame::before, .svg-frame::after,
+    .svg-fc::before,    .svg-fc::after {
+      content: ''; position: absolute; width: 16px; height: 16px;
+      border-color: rgba(201,169,110,.45); border-style: solid;
+    }
+    .svg-frame::before { top: 3px; left: 3px;   border-width: 1px 0 0 1px; }
+    .svg-frame::after  { top: 3px; right: 3px;  border-width: 1px 1px 0 0; }
+    .svg-fc { position: absolute; inset: 8px; }
+    .svg-fc::before { bottom: 0; left: 0;  border-width: 0 0 1px 1px; }
+    .svg-fc::after  { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+
+    .bg-svg  { position: absolute; inset: 8px; width: calc(100% - 16px); height: calc(100% - 16px); opacity: .08; }
+    .main-svg {
+      position: absolute; inset: 8px;
+      width: calc(100% - 16px); height: calc(100% - 16px);
+      filter: drop-shadow(0 0 12px rgba(232,99,122,.2));
+    }
+
+    @keyframes bloom {
+      from { opacity: 0; transform: scale(.75); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .fp { fill: none; stroke: url(#fgr); opacity: 0; animation: bloom .45s cubic-bezier(.34,1.56,.64,1) forwards; }
+
+    /* colonne droite */
+    .col-right { display: flex; flex-direction: column; gap: 1.3rem; }
+    .ctrl {
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(201,169,110,.1); border-radius: 12px; padding: 1.2rem;
+    }
+    .clabel {
+      font-family: 'Cinzel', serif; font-size: .58rem; letter-spacing: .28em;
+      text-transform: uppercase; color: var(--or); display: block; margin-bottom: .7rem;
+    }
+    .dnum-wrap { display: flex; align-items: baseline; gap: .45rem; margin-bottom: .65rem; }
+    .dnum {
+      font-family: 'Cinzel', serif; font-size: 3.2rem; font-weight: 700; line-height: 1;
+      background: linear-gradient(135deg, var(--rose-p), var(--rose));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .dunit { font-size: .8rem; color: var(--txt2); font-style: italic; }
+
+    input[type=range] {
+      width: 100%; height: 4px; border-radius: 2px;
+      background: rgba(201,169,110,.15);
+      outline: none; -webkit-appearance: none; appearance: none; cursor: pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 15px; height: 15px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--rose), var(--rose-c));
+      box-shadow: 0 0 8px rgba(232,99,122,.55);
+    }
+    input[type=range]::-moz-range-thumb {
+      width: 15px; height: 15px; border-radius: 50%; border: none;
+      background: linear-gradient(135deg, var(--rose), var(--rose-c));
+    }
+    .sl-hints { display: flex; justify-content: space-between; font-size: .6rem; color: rgba(201,169,110,.32); margin-top: .3rem; }
+
+    .stat { display: flex; justify-content: space-between; padding: .38rem 0; border-bottom: 1px solid rgba(255,255,255,.04); font-size: .8rem; }
+    .stat:last-child { border-bottom: none; }
+    .sk { color: var(--txt2); font-style: italic; }
+    .sv { font-family: 'Cinzel', serif; font-size: .73rem; color: var(--rose-c); letter-spacing: .04em; }
+
+    .btn-dl {
+      width: 100%; background: transparent;
+      border: 1px solid rgba(232,99,122,.38); border-radius: 8px;
+      padding: .85rem; color: var(--rose-c);
+      font-family: 'Cinzel', serif; font-size: .65rem; letter-spacing: .2em; text-transform: uppercase;
+      cursor: pointer; transition: all .25s ease;
+      display: flex; align-items: center; justify-content: center; gap: .55rem;
+    }
+    .btn-dl:hover {
+      background: rgba(192,57,75,.11); border-color: var(--rose);
+      color: #fff; transform: translateY(-2px);
+      box-shadow: 0 0 22px rgba(192,57,75,.2);
+    }
+
+    /* ══════════════════════════════════
+       SECTION CONCEPT
+    ══════════════════════════════════ */
+    .s-why {
+      position: relative; z-index: 1;
+      padding: 7rem 2rem;
+      background: var(--velours);
+    }
+    .why-inner { max-width: 1060px; margin: 0 auto; }
+    .why-grid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 1.4rem; margin-top: 3rem;
+    }
+    @media (max-width: 660px) { .why-grid { grid-template-columns: 1fr; } }
+
+    .wcard {
+      border: 1px solid rgba(201,169,110,.1); border-radius: 14px;
+      padding: 1.75rem 1.35rem; background: rgba(255,255,255,.02);
+      text-align: center; transition: transform .25s, box-shadow .25s;
+    }
+    .wcard:hover { transform: translateY(-5px); box-shadow: 0 12px 38px rgba(192,57,75,.1); }
+    .wicon  { font-size: 2.2rem; display: block; margin-bottom: 1.1rem; filter: drop-shadow(0 0 7px rgba(232,99,122,.35)); }
+    .wtitle { font-family: 'Cinzel', serif; font-size: .82rem; letter-spacing: .1em; color: var(--or); margin-bottom: .6rem; }
+    .wtext  { font-size: .9rem; font-style: italic; color: var(--txt2); line-height: 1.8; }
+
+    /* ── Footer ── */
+    footer {
+      position: relative; z-index: 1;
+      background: var(--nuit); padding: 2.5rem 2rem;
+      text-align: center; border-top: 1px solid rgba(201,169,110,.08);
+    }
+    .fheart { display: block; font-size: 1.4rem; color: var(--rouge); margin-bottom: .6rem; }
+    .fsig   { font-family: 'Cinzel', serif; font-size: .58rem; letter-spacing: .3em; text-transform: uppercase; color: rgba(201,169,110,.35); }
+    @keyframes pulse { 0%,100% { opacity:.5; transform:scale(1); } 50% { opacity:1; transform:scale(1.15); } }
+    .fheart { animation: pulse 2.2s ease-in-out infinite; }
+
+    /* ── Reveal au scroll ── */
+    .rv { opacity: 0; transform: translateY(26px); transition: opacity .75s ease, transform .75s ease; }
+    .rv.vis { opacity: 1; transform: none; }
+  </style>
+</head>
+<body>
+
+<div class="cur-dot" id="cdot"></div>
+<div class="cur-ring" id="cring"></div>
+<canvas id="stars"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">Fractals &amp; Cœurs</a>
+  <ul>
+    <li><a href="#gen">Générateur</a></li>
+    <li><a href="#concept">Concept</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-deco">
+    <svg id="hdeco" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+      <g id="hpaths" fill="none" stroke="#c0394b" stroke-width=".8"></g>
+    </svg>
+  </div>
+  <div class="eyebrow">Art Fractal · Dodécaèdre 3D · Romantisme</div>
+  <h1><span>Fractals</span><em>de l'amour infini</em></h1>
+  <p class="hero-sub">Motifs auto-similaires inspirés du Tapis de Sierpiński,<br>sculptés en cœurs pour les 12 faces de votre dodécaèdre.</p>
+  <a href="#gen" class="cta">Explorer le générateur <span class="cta-arr">↓</span></a>
+  <div class="wave">
+    <svg viewBox="0 0 1440 110" preserveAspectRatio="none">
+      <path d="M0,55 C240,110 480,0 720,55 C960,110 1200,0 1440,55 L1440,110 L0,110 Z" fill="#120810"/>
+    </svg>
+  </div>
+</section>
+
+<!-- GÉNÉRATEUR -->
+<section class="s-gen" id="gen">
+  <div class="s-head rv">
+    <span class="stag">✦ Atelier Fractal ✦</span>
+    <h2>Créez votre Motif</h2>
+    <p class="ssub">Choisissez un pattern · ajustez la profondeur · téléchargez le SVG</p>
+  </div>
+
+  <div class="gen-grid rv">
+    <!-- Motifs -->
+    <div class="col-left" id="motifs"></div>
+
+    <!-- SVG central -->
+    <div class="col-mid">
+      <div>
+        <div class="cv-name" id="cvn">—</div>
+        <div class="cv-desc" id="cvd">—</div>
+      </div>
+      <div class="svg-frame">
+        <div class="svg-fc"></div>
+        <svg class="bg-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="250,50 450,190 380,420 120,420 50,190" fill="none" stroke="#c0394b" stroke-width="1"/>
+        </svg>
+        <svg id="fsvg" class="main-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="fgr" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stop-color="#c0394b"/>
+              <stop offset="45%"  stop-color="#e8637a"/>
+              <stop offset="100%" stop-color="#f2a0b0"/>
+            </linearGradient>
+          </defs>
+          <g id="fpts"></g>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Contrôles -->
+    <div class="col-right">
+      <div class="ctrl">
+        <span class="clabel">Profondeur</span>
+        <div class="dnum-wrap">
+          <span class="dnum" id="dn">4</span>
+          <span class="dunit">niveaux</span>
+        </div>
+        <input type="range" id="sl" min="1" max="6" value="4">
+        <div class="sl-hints"><span>Minimal</span><span>Dense</span></div>
+      </div>
+      <div class="ctrl">
+        <span class="clabel">Données</span>
+        <div class="stat"><span class="sk">Éléments</span><span class="sv" id="cnt">—</span></div>
+        <div class="stat"><span class="sk">Format</span><span class="sv">Pentagone</span></div>
+        <div class="stat"><span class="sk">Export</span><span class="sv">SVG vectoriel</span></div>
+        <div class="stat"><span class="sk">Usage 3D</span><span class="sv">Blender · Fusion</span></div>
+      </div>
+      <button class="btn-dl" id="dl">⬇ &nbsp;Télécharger SVG</button>
+    </div>
+  </div>
+</section>
+
+<!-- CONCEPT -->
+<section class="s-why" id="concept">
+  <div class="why-inner">
+    <div class="s-head rv">
+      <span class="stag">✦ Le Concept ✦</span>
+      <h2>Mathématiques &amp; Romantisme</h2>
+      <p class="ssub">Quand l'infini rencontre le sentiment</p>
+    </div>
+    <div class="why-grid rv">
+      <div class="wcard">
+        <span class="wicon">🔢</span>
+        <div class="wtitle">Sierpiński</div>
+        <p class="wtext">Motif auto-similaire infini — chaque fragment reproduit la structure totale, à l'image d'un amour que l'on retrouve dans chaque détail.</p>
+      </div>
+      <div class="wcard">
+        <span class="wicon">🌀</span>
+        <div class="wtitle">Compression Fractale</div>
+        <p class="wtext">Beauté née de la répétition de systèmes itérés — comme les battements réguliers d'un cœur amoureux qui ne s'arrête jamais.</p>
+      </div>
+      <div class="wcard">
+        <span class="wicon">⬠</span>
+        <div class="wtitle">Dodécaèdre</div>
+        <p class="wtext">12 faces pentagonales — l'un des 5 solides de Platon, symbole de perfection cosmique. Chaque face reçoit son motif à imprimer en 3D.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="fheart">♥</span>
+  <p class="fsig">Fractals &amp; Cœurs · Art Génératif · Dodécaèdre 3D</p>
+</footer>
+
+<script>
+(function(){
+
+/* ── Curseur ── */
+var dot=document.getElementById('cdot'),ring=document.getElementById('cring');
+var mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',function(e){
+  mx=e.clientX;my=e.clientY;
+  dot.style.left=mx+'px';dot.style.top=my+'px';
+});
+(function loop(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);})();
+
+/* ── Étoiles ── */
+var cv=document.getElementById('stars'),ct=cv.getContext('2d'),stars=[];
+function initS(){
+  cv.width=window.innerWidth;cv.height=window.innerHeight;stars=[];
+  for(var i=0;i<140;i++)stars.push({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*.7+.15,a:Math.random(),sp:Math.random()*.003+.001});
+}
+function drawS(){
+  ct.clearRect(0,0,cv.width,cv.height);
+  stars.forEach(function(s){s.a+=s.sp;if(s.a>1)s.a=0;ct.beginPath();ct.arc(s.x,s.y,s.r,0,Math.PI*2);ct.fillStyle='rgba(242,160,176,'+s.a+')';ct.fill();});
+  requestAnimationFrame(drawS);
+}
+initS();drawS();window.addEventListener('resize',initS);
+
+/* ── Scroll reveal ── */
+document.querySelectorAll('.rv').forEach(function(el){
+  new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)e.target.classList.add('vis');});},{threshold:.12}).observe(el);
+});
+
+/* ── Motifs ── */
+var PAT=[
+  {n:'Tapis de Sierpiński Cœur',   d:'Auto-similarité pentagonale infinie'},
+  {n:'Spirale Fractale Romantique', d:'Spirale dorée à 72° — angle du pentagone'},
+  {n:'Mandala Cardiaque',           d:'Couches concentriques rayonnantes'},
+  {n:'Flocon de Koch Amoureux',     d:'Ramifications en étoile pentagonale'},
+  {n:'Compression Fractale',        d:'Cœurs imbriqués à rotation progressive'}
+];
+
+/* ── Chemin cœur ── */
+function H(cx,cy,sz,rot){
+  rot=rot||0;var s=sz/100,r=rot*Math.PI/180,c=Math.cos(r),sn=Math.sin(r);
+  function T(x,y){return [(cx+(x*c-y*sn)*s).toFixed(3),(cy+(x*sn+y*c)*s).toFixed(3)];}
+  var a=T(0,30),b=T(-25,5),e=T(-25,-20),f=T(0,-35),g=T(25,-20),h=T(25,5);
+  return 'M'+a+' C'+b+' '+e+' '+f+' C'+g+' '+h+' '+a+'Z';
+}
+
+/* ── Générateurs ── */
+function g0(cx,cy,sz,d,A){A=A||[];if(d===0){A.push({p:H(cx,cy,sz),w:1.4});return A;}var ns=sz/2.5,o=sz*.35;[[cx,cy-o],[cx-o*.95,cy-o*.3],[cx-o*.6,cy+o*.8],[cx+o*.6,cy+o*.8],[cx+o*.95,cy-o*.3]].forEach(function(v){g0(v[0],v[1],ns,d-1,A);});return A;}
+function g1(cx,cy,sz,d,A){A=A||[];if(d===0||sz<3)return A;A.push({p:H(cx,cy,sz,d*36),w:Math.max(.5,2-d*.2)});var a=d*72*Math.PI/180,r=sz*.5;return g1(cx+r*Math.cos(a),cy+r*Math.sin(a),sz*.65,d-1,A);}
+function g2(cx,cy,sz,d,A){A=A||[];var L=d+1;for(var l=L;l>0;l--){var ls=sz*l/L,n=5+(L-l)*2;for(var i=0;i<n;i++){var a=i*360/n,rad=a*Math.PI/180,r=ls*.8;A.push({p:H(cx+r*Math.cos(rad),cy+r*Math.sin(rad),ls/(2+l*.3),a),w:1});}}A.push({p:H(cx,cy,sz/3),w:1.8});return A;}
+function g3(cx,cy,sz,d,A){A=A||[];var step=2*Math.PI/5;function br(x,y,len,ang,dd){if(dd===0){A.push({p:H(x,y,len/3,ang*180/Math.PI),w:.8});return;}var nl=len/3,x2=x+nl*Math.cos(ang),y2=y+nl*Math.sin(ang);br(x2,y2,nl,ang,dd-1);br(x2,y2,nl,ang-Math.PI/3,dd-1);br(x2,y2,nl,ang+Math.PI/3,dd-1);}for(var i=0;i<5;i++){var a=i*step-Math.PI/2;br(cx+sz*.2*Math.cos(a),cy+sz*.2*Math.sin(a),sz*.85,a,d);}return A;}
+function g4(cx,cy,sz,d,A){A=A||[];for(var i=0;i<=d;i++){var f=Math.pow(.75,i),cs=sz*f,rot=i*15,r=sz*(1-f)*.6;if(i===0){A.push({p:H(cx,cy,cs,rot),w:2});}else{for(var j=0;j<5;j++){var a=(j*72+rot)*Math.PI/180;A.push({p:H(cx+r*Math.cos(a),cy+r*Math.sin(a),cs,j*72+rot),w:Math.max(.5,2-i*.3)});}}}return A;}
+var GENS=[g0,g1,g2,g3,g4];
+
+/* ── État & DOM ── */
+var sel=0,depth=4;
+var $mc=document.getElementById('motifs');
+var $cvn=document.getElementById('cvn'),$cvd=document.getElementById('cvd');
+var $pts=document.getElementById('fpts'),$cnt=document.getElementById('cnt');
+var $svg=document.getElementById('fsvg');
+var $dn=document.getElementById('dn'),$sl=document.getElementById('sl');
+var $dl=document.getElementById('dl');
+
+var cards=[];
+PAT.forEach(function(p,i){
+  var d=document.createElement('div');
+  d.className='mcard'+(i===0?' on':'');
+  d.innerHTML='<div class="mnum">0'+(i+1)+'</div><div class="mname">'+p.n+'</div><div class="mdesc">'+p.d+'</div>';
+  d.addEventListener('click',function(){sel=i;render();});
+  $mc.appendChild(d);cards.push(d);
+});
+
+/* décor hero */
+(function(){var g=document.getElementById('hpaths');g0(250,250,210,3).forEach(function(e){var p=document.createElementNS('http://www.w3.org/2000/svg','path');p.setAttribute('d',e.p);g.appendChild(p);});})();
+
+$sl.addEventListener('input',function(){depth=+$sl.value;$dn.textContent=depth;render();});
+
+function render(){
+  cards.forEach(function(c,i){c.classList.toggle('on',i===sel);});
+  $cvn.textContent=PAT[sel].n;$cvd.textContent=PAT[sel].d;
+  var el=GENS[sel](250,250,200,depth);
+  $pts.innerHTML='';
+  var frag=document.createDocumentFragment();
+  el.forEach(function(e,idx){
+    var path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',e.p);path.setAttribute('class','fp');
+    path.style.strokeWidth=(e.w||1.4)+'px';
+    path.style.animationDelay=(idx*.01)+'s';
+    frag.appendChild(path);
+  });
+  $pts.appendChild(frag);
+  $cnt.textContent=el.length.toLocaleString('fr-FR');
+}
+
+$dl.addEventListener('click',function(){
+  var data=new XMLSerializer().serializeToString($svg);
+  var blob=new Blob([data],{type:'image/svg+xml;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='fractal-coeur-'+PAT[sel].n.toLowerCase().replace(/[\s'œ]/g,'-')+'-d'+depth+'.svg';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+});
+
+render();
+})();
+</script>
+</body>
+</html>
