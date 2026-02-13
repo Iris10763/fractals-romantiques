@@ -18,6 +18,16 @@ Built as a first exploration of GitHub Pages deployment.
 
 <p align="center">──────────── ✦ ────────────</p>
 
+## 🌹 Live Experience
+
+<p align="center">
+  <a href="https://mel.github.io/fractals-mel/">
+    <strong>→ Open the generator</strong>
+  </a>
+</p>
+
+<p align="center">──────────── ✦ ────────────</p>
+
 ## 🫀 Features
 
 - 💓 Cardiac-inspired fractal generation  
