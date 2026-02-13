@@ -21,7 +21,7 @@ Built as a first exploration of GitHub Pages deployment.
 ## 🌹 Live Experience
 
 <p align="center">
-  <a href="https://mel.github.io/fractals-mel/](https://iris10763.github.io/fractals-romantiques/">
+  <a href="https://iris10763.github.io/fractals-mel/fractals-romantiques.html">
     <strong>→ Open the generator</strong>
   </a>
 </p>
