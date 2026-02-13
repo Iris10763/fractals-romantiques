@@ -4,8 +4,6 @@
   ♥ A Valentine's Day experiment ♥  
   <br/>
   A generator of cardiac fractal models you can export as SVG.
-  <br/>
-  Made with Extra Love ♥ MEL
 </p>
 
 <p align="center">──────────── ✦ ────────────</p>
@@ -36,4 +34,7 @@ because mathematics can be romantic too.🌹
 
 <p align="center">
   <img src="./logo_mel.png" width="180" alt="fractals-mel logo"/>
+  </br>
+  Made with Extra Love ♥ MEL
 </p>
+
